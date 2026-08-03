@@ -1,0 +1,8 @@
+# TEMPORARY:
+# Currently blocks crawlers for testing.
+# Remove before production launch.
+
+User-agent: *
+Allow: /
+
+Sitemap: https://edu-blog-example.vercel.app/sitemap-index.xml
