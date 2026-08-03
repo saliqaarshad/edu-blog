@@ -1,0 +1,102 @@
+media:
+  input: public/images
+  output: /images
+
+content:
+  - name: posts
+    label: Blog Posts
+    type: collection
+    path: src/content/posts
+    format: yaml-frontmatter
+    filename: "{slug}.md"
+    fields:
+      - name: title
+        label: Title
+        type: string
+        required: true
+      - name: slug
+        label: Slug / URL Path
+        type: string
+        required: true
+      - name: author
+        label: Author Name
+        type: string
+        required: true
+      - name: pubDate
+        label: Publication Date
+        type: date
+        required: true
+      - name: description
+        label: Description / Excerpt
+        type: text
+        required: true
+      - name: metaTitle
+        label: Meta Title (SEO)
+        type: string
+      - name: metaDescription
+        label: Meta Description (SEO)
+        type: text
+      - name: focusKeyword
+        label: Focus Keyword (SEO)
+        type: string
+      - name: seoScore
+        label: SEO Score (0-100)
+        type: number
+      - name: tags
+        label: Tags / Categories
+        type: string
+        list: true
+      - name: featuredImage
+        label: Featured Image
+        type: image
+      - name: featuredImageAlt
+        label: Featured Image Alt Text
+        type: string
+      - name: ogImage
+        label: OpenGraph Image
+        type: image
+      - name: twitterCard
+        label: Twitter Card Type
+        type: select
+        options:
+          - label: Summary
+            value: summary
+          - label: Summary with Large Image
+            value: summary_large_image
+      - name: canonicalUrl
+        label: Canonical URL
+        type: string
+      - name: noindex
+        label: Noindex (Hide from search engines)
+        type: boolean
+      - name: hreflang
+        label: Hreflang (e.g. en-US, es-ES)
+        type: string
+      - name: ctaHeading
+        label: CTA Heading
+        type: string
+      - name: ctaText
+        label: CTA Text
+        type: text
+      - name: ctaButtonLabel
+        label: CTA Button Label
+        type: string
+      - name: ctaButtonUrl
+        label: CTA Button URL
+        type: string
+      - name: faqs
+        label: FAQ Section
+        type: object
+        list: true
+        fields:
+          - name: question
+            label: Question
+            type: string
+            required: true
+          - name: answer
+            label: Answer
+            type: text
+            required: true
+      - name: body
+        label: Blog Content
+        type: rich-text

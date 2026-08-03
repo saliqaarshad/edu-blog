@@ -1,0 +1,319 @@
+---
+import { getCollection } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+import { countWords, getReadingTime, extractHeadings } from '../../utils/blog';
+
+// Get static paths for Astro build
+export async function getStaticPaths() {
+  const posts = await getCollection('posts');
+  return posts.map(post => ({
+    params: { slug: post.slug },
+    props: { post }
+  }));
+}
+
+const { post } = Astro.props;
+const { Content } = await post.render();
+
+// Generate metrics
+const wordCount = countWords(post.body);
+const readingTime = getReadingTime(post.body);
+const headings = extractHeadings(post.body);
+
+// Retrieve related articles (by tag overlap)
+const allPosts = await getCollection('posts');
+const relatedPosts = allPosts
+  .filter(p => p.slug !== post.slug && p.data.tags.some(tag => post.data.tags.includes(tag)))
+  .slice(0, 2);
+
+// Generate JSON-LD BlogPosting Schema
+const schemaJson = JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": post.data.title,
+  "description": post.data.description,
+  "datePublished": post.data.pubDate.toISOString(),
+  "author": {
+    "@type": "Person",
+    "name": post.data.author
+  },
+  "image": post.data.featuredImage ? new URL(post.data.featuredImage, Astro.site || Astro.url).href : undefined,
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": Astro.url.href
+  }
+});
+---
+
+<Layout 
+  title={`${post.data.metaTitle || post.data.title} | TheEduAssist`}
+  description={post.data.metaDescription || post.data.description}
+  canonicalUrl={post.data.canonicalUrl || Astro.url.href}
+  ogImage={post.data.ogImage || post.data.featuredImage}
+  twitterCard={post.data.twitterCard}
+  noindex={post.data.noindex}
+  hreflang={post.data.hreflang}
+  schemaJson={schemaJson}
+>
+  {/* Article Header & Hero */}
+  <section class="py-12 sm:py-20 bg-slate-50 border-b border-slate-100">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      {/* Back Button */}
+      <a 
+        href="/blog" 
+        class="inline-flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-brand-600 transition mb-8 group"
+      >
+        <span class="transform group-hover:-translate-x-1 transition duration-200">&larr;</span> 
+        <span>Back to Blog Feed</span>
+      </a>
+
+      {/* Meta Row Pills */}
+      <div class="flex flex-wrap items-center gap-3 mb-6">
+        <span class="inline-flex items-center px-3 py-1 rounded-xl text-xs font-bold bg-brand-50 text-brand-700 border border-brand-100/50">
+          SEO Score: {post.data.seoScore || 100}/100
+        </span>
+        <span class="inline-flex items-center px-3 py-1 rounded-xl text-xs font-semibold bg-slate-150 text-slate-600 border border-slate-200/50">
+          ⏱️ {readingTime} min read
+        </span>
+        <span class="inline-flex items-center px-3 py-1 rounded-xl text-xs font-semibold bg-slate-150 text-slate-600 border border-slate-200/50">
+          📝 {wordCount} words
+        </span>
+      </div>
+
+      <h1 class="text-3xl sm:text-5xl font-extrabold text-slate-950 tracking-tight leading-tight sm:leading-none mb-6">
+        {post.data.title}
+      </h1>
+
+      <p class="text-lg text-slate-600 leading-relaxed mb-8">
+        {post.data.description}
+      </p>
+
+      {/* Author & Publish Date Metadata */}
+      <div class="flex items-center gap-4 p-5 bg-white rounded-2xl border border-slate-100 shadow-soft max-w-md">
+        <div class="w-11 h-11 rounded-full bg-brand-600 text-white flex items-center justify-center font-bold text-lg">
+          {post.data.author.charAt(0)}
+        </div>
+        <div>
+          <div class="text-sm font-bold text-slate-900">{post.data.author}</div>
+          <div class="text-xs text-slate-500 flex items-center gap-1.5 mt-0.5">
+            <span>Published on</span>
+            <time datetime={post.data.pubDate.toISOString()}>
+              {post.data.pubDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+            </time>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  {/* Article Hero Image */}
+  {post.data.featuredImage && (
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8 relative z-20">
+      <div class="bg-slate-100 rounded-3xl overflow-hidden shadow-soft-lg aspect-[21/9] border border-slate-200/50">
+        <img 
+          src={post.data.featuredImage} 
+          alt={post.data.featuredImageAlt || post.data.title}
+          class="w-full h-full object-cover"
+        />
+      </div>
+    </div>
+  )}
+
+  {/* Main Article Content & Table of Contents Sidebar */}
+  <section class="py-16 bg-white relative z-10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="lg:grid lg:grid-cols-12 gap-12 max-w-6xl mx-auto">
+        
+        {/* Table of Contents (TOC) Desktop Sidebar */}
+        <aside class="hidden lg:block lg:col-span-3">
+          <div class="sticky top-28 p-6 bg-slate-50 rounded-2xl border border-slate-100">
+            <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">
+              Table of Contents
+            </h3>
+            {headings.length > 0 ? (
+              <nav class="space-y-3 text-sm">
+                {headings.map(heading => (
+                  <a 
+                    href={`#${heading.slug}`}
+                    class={`block text-slate-600 hover:text-brand-600 transition duration-150 ${heading.depth === 3 ? 'pl-4 text-xs' : 'font-medium'}`}
+                  >
+                    {heading.text}
+                  </a>
+                ))}
+              </nav>
+            ) : (
+              <p class="text-xs text-slate-400">No sections found.</p>
+            )}
+          </div>
+        </aside>
+
+        {/* Article Body Content */}
+        <article class="lg:col-span-9 col-span-12 space-y-12">
+          
+          {/* Collapsible Mobile Table of Contents */}
+          {headings.length > 0 && (
+            <div class="block lg:hidden bg-slate-50 border border-slate-100 rounded-2xl overflow-hidden mb-8">
+              <button 
+                id="mobile-toc-toggle"
+                class="w-full flex items-center justify-between p-5 text-sm font-bold text-slate-900 focus:outline-none"
+                aria-expanded="false"
+              >
+                <span>Table of Contents</span>
+                <span id="mobile-toc-chevron" class="transform transition-transform duration-200">&darr;</span>
+              </button>
+              <div id="mobile-toc-content" class="hidden border-t border-slate-100 p-5 space-y-3 bg-white text-sm">
+                {headings.map(heading => (
+                  <a 
+                    href={`#${heading.slug}`}
+                    class={`mobile-toc-link block text-slate-600 hover:text-brand-600 transition ${heading.depth === 3 ? 'pl-4 text-xs' : 'font-medium'}`}
+                  >
+                    {heading.text}
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Core Markdown Body */}
+          <div class="prose-custom max-w-none">
+            <Content />
+          </div>
+
+          {/* FAQ plain text section */}
+          {post.data.faqs && post.data.faqs.length > 0 && (
+            <div class="border-t border-slate-100 pt-12 mt-12">
+              <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-950 tracking-tight mb-8">
+                Frequently Asked Questions
+              </h2>
+              <div class="space-y-8">
+                {post.data.faqs.map(faq => (
+                  <div class="bg-slate-50 p-6 sm:p-8 rounded-2xl border border-slate-100">
+                    <h3 class="text-lg sm:text-xl font-bold text-slate-900 mb-3">
+                      {faq.question}
+                    </h3>
+                    <p class="text-slate-600 leading-relaxed text-sm">
+                      {faq.answer}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* End of Blog CTA */}
+          {post.data.ctaHeading && (
+            <div class="bg-gradient-to-tr from-brand-600 to-indigo-600 rounded-[24px] p-8 sm:p-12 text-white shadow-soft mt-16 text-center sm:text-left relative overflow-hidden">
+              <div class="relative z-10 max-w-2xl">
+                <h3 class="text-2xl sm:text-3xl font-black mb-4">
+                  {post.data.ctaHeading}
+                </h3>
+                <p class="text-white/85 leading-relaxed text-sm mb-8">
+                  {post.data.ctaText}
+                </p>
+                {post.data.ctaButtonLabel && post.data.ctaButtonUrl && (
+                  <a 
+                    href={post.data.ctaButtonUrl}
+                    class="inline-flex items-center justify-center px-6 py-3.5 bg-white text-brand-700 font-bold rounded-xl text-xs sm:text-sm hover:bg-slate-50 transition shadow"
+                  >
+                    {post.data.ctaButtonLabel}
+                  </a>
+                )}
+              </div>
+              <div class="absolute -right-24 -bottom-24 w-64 h-64 rounded-full bg-brand-500/20 blur-2xl"></div>
+            </div>
+          )}
+
+          {/* Related Articles Footer */}
+          {relatedPosts.length > 0 && (
+            <div class="border-t border-slate-100 pt-12 mt-12">
+              <h3 class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-6">
+                Recommended Articles
+              </h3>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                {relatedPosts.map(related => {
+                  const relTime = getReadingTime(related.body);
+                  return (
+                    <div class="p-6 bg-slate-50 rounded-2xl border border-slate-100 hover:shadow-soft transition duration-200 flex flex-col justify-between">
+                      <div>
+                        <div class="flex items-center gap-2 text-[11px] text-slate-500 mb-3">
+                          <time>{related.data.pubDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</time>
+                          <span>•</span>
+                          <span>{relTime} min read</span>
+                        </div>
+                        <h4 class="font-bold text-slate-900 mb-2 line-clamp-2 hover:text-brand-600 transition">
+                          <a href={`/blog/${related.slug}`}>{related.data.title}</a>
+                        </h4>
+                        <p class="text-xs text-slate-600 line-clamp-2 mb-4 leading-relaxed">
+                          {related.data.description}
+                        </p>
+                      </div>
+                      <a 
+                        href={`/blog/${related.slug}`}
+                        class="text-xs font-bold text-brand-600 hover:text-brand-700 mt-auto flex items-center gap-1"
+                      >
+                        Read Article &rarr;
+                      </a>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+        </article>
+
+      </div>
+    </div>
+  </section>
+
+  {/* Client Side Mobile TOC and Anchor Highlight code */}
+  <script>
+    // Mobile TOC Toggle
+    const tocToggle = document.getElementById('mobile-toc-toggle');
+    const tocContent = document.getElementById('mobile-toc-content');
+    const tocChevron = document.getElementById('mobile-toc-chevron');
+
+    if (tocToggle && tocContent && tocChevron) {
+      tocToggle.addEventListener('click', () => {
+        const isExpanded = tocToggle.getAttribute('aria-expanded') === 'true';
+        tocToggle.setAttribute('aria-expanded', !isExpanded ? 'true' : 'false');
+        tocContent.classList.toggle('hidden');
+        tocChevron.classList.toggle('rotate-180');
+      });
+
+      // Close mobile TOC on clicking a heading link
+      const mobileLinks = document.querySelectorAll('.mobile-toc-link');
+      mobileLinks.forEach(link => {
+        link.addEventListener('click', () => {
+          tocContent.classList.add('hidden');
+          tocToggle.setAttribute('aria-expanded', 'false');
+          tocChevron.classList.remove('rotate-180');
+        });
+      });
+    }
+
+    // Set heading IDs automatically to match the parsed Table of Contents slugs
+    const headingsInText = document.querySelectorAll('.prose-custom h2, .prose-custom h3');
+    const headingSlugs: Record<string, number> = {};
+
+    headingsInText.forEach(heading => {
+      const text = (heading.textContent || '').trim().replace(/[*_`]/g, '');
+      let slug = text
+        .toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, '')
+        .trim()
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-');
+        
+      if (headingSlugs[slug] !== undefined) {
+        headingSlugs[slug]++;
+        slug = `${slug}-${headingSlugs[slug]}`;
+      } else {
+        headingSlugs[slug] = 0;
+      }
+      heading.id = slug;
+    });
+  </script>
+</Layout>
