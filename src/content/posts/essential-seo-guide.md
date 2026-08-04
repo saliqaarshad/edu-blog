@@ -12,9 +12,9 @@ tags: [
   "SaaS",
   "Marketing"
 ]
-featuredImage: "/images/seo-saas.jpg"
+featuredImage: "https://images.unsplash.com/photo-1432888498266-38ffec3eaf0a?w=800"
 featuredImageAlt: "Abstract charts showing upward organic traffic trends on a tablet."
-ogImage: "/images/seo-saas.jpg"
+ogImage: "https://images.unsplash.com/photo-1432888498266-38ffec3eaf0a?w=800"
 twitterCard: "summary_large_image"
 canonicalUrl: "https://edu-blog-example.vercel.app/blog/essential-seo-guide"
 seoScore: 98

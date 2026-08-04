@@ -12,9 +12,9 @@ tags: [
   "Astro",
   "Tailwind CSS"
 ]
-featuredImage: "/images/web-dev-hero.jpg"
+featuredImage: "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=800"
 featuredImageAlt: "A sleek workspace with a laptop showing code and modern dual monitors."
-ogImage: "/images/web-dev-hero.jpg"
+ogImage: "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=800"
 twitterCard: "summary_large_image"
 canonicalUrl: "https://edu-blog-example.vercel.app/blog/getting-started-web-dev"
 seoScore: 92

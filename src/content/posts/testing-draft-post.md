@@ -11,9 +11,9 @@ tags: [
   "Testing",
   "DevOps"
 ]
-featuredImage: "/images/testing-hero.jpg"
+featuredImage: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=800"
 featuredImageAlt: "A digital display illustrating test automation graphs and parameters."
-ogImage: "/images/testing-hero.jpg"
+ogImage: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=800"
 twitterCard: "summary"
 canonicalUrl: "https://edu-blog-example.vercel.app/blog/testing-draft-post"
 seoScore: 65
