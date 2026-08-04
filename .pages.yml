@@ -1,102 +1,108 @@
-media:
-  input: public/images
-  output: /images
-
 content:
-  - name: posts
-    label: Blog Posts
-    type: collection
+  - name: blog
+    label: Blog
     path: src/content/posts
-    format: yaml-frontmatter
-    filename: "{slug}.md"
+    type: collection
+    filename: '{fields.slug}.md'
     fields:
       - name: title
         label: Title
         type: string
-        required: true
+
       - name: slug
-        label: Slug / URL Path
+        label: Slug
         type: string
-        required: true
+
       - name: author
-        label: Author Name
+        label: Author
         type: string
-        required: true
+
       - name: pubDate
         label: Publication Date
         type: date
-        required: true
+
       - name: description
-        label: Description / Excerpt
+        label: Description
         type: text
-        required: true
+
       - name: metaTitle
-        label: Meta Title (SEO)
+        label: SEO Meta Title
         type: string
+
       - name: metaDescription
-        label: Meta Description (SEO)
+        label: SEO Meta Description
         type: text
+
       - name: focusKeyword
-        label: Focus Keyword (SEO)
+        label: Focus Keyword
         type: string
-      - name: seoScore
-        label: SEO Score (0-100)
-        type: number
-      - name: tags
-        label: Tags / Categories
-        type: string
-        list: true
+
       - name: featuredImage
         label: Featured Image
         type: image
+        options:
+          path: src/assets/blog
+          publicPath: /assets/blog
+
       - name: featuredImageAlt
         label: Featured Image Alt Text
         type: string
+
       - name: ogImage
-        label: OpenGraph Image
-        type: image
+        label: Open Graph Image URL
+        type: string
+
       - name: twitterCard
         label: Twitter Card Type
-        type: select
+        type: string
         options:
-          - label: Summary
-            value: summary
-          - label: Summary with Large Image
-            value: summary_large_image
+          - summary
+          - summary_large_image
+
       - name: canonicalUrl
         label: Canonical URL
         type: string
-      - name: noindex
-        label: Noindex (Hide from search engines)
-        type: boolean
+
       - name: hreflang
-        label: Hreflang (e.g. en-US, es-ES)
+        label: "Hreflang ℹ️ (Language tag e.g. en-us, ur, ar)"
         type: string
+
       - name: ctaHeading
         label: CTA Heading
         type: string
+
       - name: ctaText
         label: CTA Text
         type: text
+
       - name: ctaButtonLabel
         label: CTA Button Label
         type: string
+
       - name: ctaButtonUrl
         label: CTA Button URL
         type: string
+
+      - name: tags
+        label: Tags
+        type: string
+        list: true
+
       - name: faqs
-        label: FAQ Section
+        label: FAQs
         type: object
         list: true
         fields:
           - name: question
             label: Question
             type: string
-            required: true
           - name: answer
             label: Answer
             type: text
-            required: true
+
       - name: body
-        label: Blog Content
+        label: Body
         type: rich-text
+        options:
+          path: src/assets/blog
+          extensions: [jpg, jpeg, png, webp]
